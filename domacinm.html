@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domaci</title>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="items.js"></script>
+    <script>
+        $(document).ready(function() {
+            const renderItem = (item) => {
+                $row = $("<tr></tr>");
+                $naziv = $("<td></td>").text(item['naziv']);
+                $kolicina = $("<td></td>").append('<button class="buttonMinus">-</button>').append('<span class="kolicina">' + item['komada'] + '</span>').append('<button class="buttonPlus">+</button>');
+                $cena = $("<td class='cena'></td>").text(item['cena']);
+                $ukupnaCena = $("<td class='ukupna-cena'></td>").text(item['komada'] * item['cena'])
+                $row.append($naziv, $kolicina, $cena, $ukupnaCena);
+                return $row;
+            }
+            const renderItemsList = (data) => {
+                data.forEach(element => {
+                    $("#items-list").append(renderItem(element))
+                });
+                Refresh();
+            }
+            function Refresh() {
+                $('.buttonMinus').off('click').on('click', function() {
+                    const vrednost = $(this).siblings('.kolicina');
+                    const trenutna = parseInt(vrednost.text(), 10);
+                    if (trenutna > 0) {
+                        vrednost.text(trenutna - 1);
+                        updateUkupnaCena($(this).closest('tr'));
+                    }
+                });
+                $('.buttonPlus').off('click').on('click', function() {
+                    const vrednost = $(this).siblings('.kolicina');
+                    const trenutna = parseInt(vrednost.text(), 10);
+                    vrednost.text(trenutna + 1);
+                    updateUkupnaCena($(this).closest('tr'));
+                });
+            }
+            renderItemsList(items);
+            function updateUkupnaCena($row) {
+                const kolicina = parseInt($row.find('.kolicina').text(), 10);
+                const cena = parseInt($row.find('.cena').text(), 10);
+                $row.find('.ukupna-cena').text(kolicina * cena);
+                updateUkupnaSuma();
+            }
+            $('#dodaj-item').on('click', function() {
+                const $nazivInput = $('#naziv-input');
+                const $kolicinaInput = $('#kolicina-input');
+                const $cenaInput = $('#cena-input');
+                const noviItem = {
+                    naziv: $nazivInput.val(),
+                    komada: parseInt($kolicinaInput.val(), 10),
+                    cena: parseInt($cenaInput.val(), 10)
+                };
+                if (!isNaN(noviItem.komada) && !isNaN(noviItem.cena)) {
+                    const $noviRed = renderItem(noviItem);
+                    $("#items-list").append($noviRed);
+                    updateUkupnaSuma();
+                    $nazivInput.val('');
+                    $kolicinaInput.val('');
+                    $cenaInput.val('');
+                    Refresh();
+                }
+            });
+            function updateUkupnaSuma() {
+                let ukupnaSuma = 0;
+                $('.ukupna-cena').each(function() {
+                    ukupnaSuma += parseInt($(this).text(), 10);
+                });
+                $('#ukupna-suma').text(ukupnaSuma);
+            }
+            updateUkupnaSuma();
+        });
+    </script>
+</head>
+<body style="text-align: left;">
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Naziv</th>
+                    <th>Komada</th>
+                    <th>Cena</th>
+                    <th>Ukupna cena</th>
+                </tr>
+            </thead>
+            <tbody id="items-list"></tbody>
+            <tfoot>
+                <tr>
+                    <td><input type="text" id="naziv-input" placeholder="Naziv"></td>
+                    <td><input type="text" id="kolicina-input" placeholder="Količina"></td>
+                    <td><input type="text" id="cena-input" placeholder="Cena"></td>
+                    <td id="ukupna-suma"></td>
+                    <td><button id="dodaj-item">Dodaj</button></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+</html>
